@@ -52,6 +52,7 @@ import java.util.concurrent.CompletionStage
  * Main framework class that scans for components and configures a runtime executable schema.
  */
 class DgsSchemaProvider(private val applicationContext: ApplicationContext,
+						private val dgsProperties: DgsProperties,
                         private val federationResolver: Optional<DgsFederationResolver>,
                         private val existingTypeDefinitionRegistry: Optional<TypeDefinitionRegistry>,
                         private val mockProviders: Optional<Set<MockProvider>>) {
@@ -376,12 +377,12 @@ class DgsSchemaProvider(private val applicationContext: ApplicationContext,
         }
     }
 
-    internal fun findSchemaFiles(basedir: String = "schema", hasDynamicTypeRegistry: Boolean = false): Array<Resource> {
+    internal fun findSchemaFiles(hasDynamicTypeRegistry: Boolean = false): Array<Resource> {
         val cl = Thread.currentThread().contextClassLoader
 
         val resolver = PathMatchingResourcePatternResolver(cl)
         val schemas = try {
-            val resources = resolver.getResources("classpath*:${basedir}/**/*.graphql*")
+            val resources = resolver.getResources(dgsProperties.schemaLocationPattern)
             if (resources.isEmpty()) {
                 throw NoSchemaFoundException()
             }
@@ -391,19 +392,19 @@ class DgsSchemaProvider(private val applicationContext: ApplicationContext,
                 logger.info("No schema files found, but a schema was provided as an TypeDefinitionRegistry")
                 return arrayOf()
             } else {
-                logger.error("No schema files found. Define schemas in src/main/resources/${basedir}/**/*.graphqls")
+                logger.error("No schema files found. Define schemas in src/main/resources/{}", dgsProperties.schemaLocationPattern)
                 throw NoSchemaFoundException()
             }
         }
 
         val testSchemas = try {
-            resolver.getResources("classpath:${basedir}-test/**/*.graphql*")
+            resolver.getResources(dgsProperties.testSchemaLocationPattern)
         } catch (ex: Exception) {
             arrayOf<Resource>()
         }
 
         val metaInfSchemas = try {
-            resolver.getResources("classpath*:META-INF/${basedir}/**/*.graphql*")
+            resolver.getResources(dgsProperties.metainfSchemaLocationPattern)
         } catch (ex: Exception) {
             arrayOf<Resource>()
         }

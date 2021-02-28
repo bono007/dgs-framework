@@ -18,6 +18,7 @@ package com.netflix.graphql.dgs.autoconfig
 
 import com.netflix.graphql.dgs.DgsContextBuilder
 import com.netflix.graphql.dgs.DgsFederationResolver
+import com.netflix.graphql.dgs.DgsProperties
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.context.DgsCustomContextBuilder
 import com.netflix.graphql.dgs.exceptions.DefaultDataFetcherExceptionHandler
@@ -41,6 +42,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -53,6 +55,7 @@ import java.util.*
  */
 @Configuration
 @ImportAutoConfiguration(classes = [JacksonAutoConfiguration::class])
+@EnableConfigurationProperties(DgsProperties::class)
 open class DgsAutoConfiguration {
 
     @Bean
@@ -130,13 +133,14 @@ open class DgsAutoConfiguration {
     @ConditionalOnMissingBean
     open fun dgsSchemaProvider(
             applicationContext: ApplicationContext,
+			dgsProperties: DgsProperties,
             federationResolver: Optional<DgsFederationResolver>,
             dataFetcherExceptionHandler: DataFetcherExceptionHandler,
             existingTypeDefinitionFactory: Optional<TypeDefinitionRegistry>,
             existingCodeRegistry: Optional<GraphQLCodeRegistry>,
             mockProviders: Optional<Set<MockProvider>>
     ): DgsSchemaProvider {
-        return DgsSchemaProvider(applicationContext, federationResolver, existingTypeDefinitionFactory, mockProviders)
+        return DgsSchemaProvider(applicationContext, dgsProperties, federationResolver, existingTypeDefinitionFactory, mockProviders)
     }
 
     @Bean
