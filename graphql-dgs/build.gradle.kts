@@ -20,6 +20,7 @@ dependencies {
 
     api("com.graphql-java:graphql-java:${Versions.GRAPHQL_JAVA}")
     api("com.jayway.jsonpath:json-path:2.+")
+    api("org.hibernate.validator:hibernate-validator")
 
     implementation("org.springframework:spring-web")
     implementation("org.springframework:spring-context")
@@ -31,6 +32,8 @@ dependencies {
     implementation("org.springframework.security:spring-security-core")
 
     testImplementation("org.springframework.security:spring-security-core")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
     testImplementation("io.reactivex.rxjava3:rxjava:3.+")
     testImplementation("io.mockk:mockk:1.10.3-jdk8")
 }

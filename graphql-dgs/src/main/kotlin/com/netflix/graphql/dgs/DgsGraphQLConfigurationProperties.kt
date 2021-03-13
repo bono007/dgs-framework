@@ -20,6 +20,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.bind.DefaultValue
 import org.springframework.validation.annotation.Validated
+import javax.validation.Constraint
+import javax.validation.Valid
+import javax.validation.constraints.Pattern
+import kotlin.reflect.KClass
 
 /**
  * Configuration properties for DGS.
@@ -30,16 +34,16 @@ import org.springframework.validation.annotation.Validated
 @Suppress("ConfigurationProperties")
 data class DgsGraphQLConfigurationProperties(
     /** Path to the GraphQL endpoint without trailing slash. */
-    @DefaultValue("/graphql") val path: String,
-    @DefaultValue val graphiql: DgsGraphiQLConfigurationProperties,
-    @DefaultValue val schemaJson: DgsSchemaJsonConfigurationProperties
+    @DefaultValue("/graphql") @field:ValidPath val path: String,
+    @DefaultValue @Valid val graphiql: DgsGraphiQLConfigurationProperties,
+    @DefaultValue @Valid val schemaJson: DgsSchemaJsonConfigurationProperties
 ) {
     /**
      * Configuration properties for GraphiQL.
      */
     data class DgsGraphiQLConfigurationProperties(
         /** Path to the GraphiQL endpoint without trailing slash. */
-        @DefaultValue("/graphiql") val path: String
+        @DefaultValue("/graphiql") @field:ValidPath val path: String
     )
 
     /**
@@ -47,6 +51,19 @@ data class DgsGraphQLConfigurationProperties(
      */
     data class DgsSchemaJsonConfigurationProperties(
         /** Path to the schema-json endpoint without trailing slash. */
-        @DefaultValue("/schema.json") val path: String
+        @DefaultValue("/schema.json") @field:ValidPath val path: String
+    )
+
+    /**
+     * Convenience annotation to prevent having to repeat the @Pattern for every path field.
+     */
+    @kotlin.annotation.Target(AnnotationTarget.FIELD)
+    @kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+    @Constraint(validatedBy = [])
+    @Pattern(regexp = "^\\/.*[^\\/]\$", message = "path must begin with a slash and not end with a slash")
+    annotation class ValidPath(
+        val message: String = "",
+        val groups: Array<KClass<out Any>> = [],
+        val payload: Array<KClass<out Any>> = []
     )
 }
